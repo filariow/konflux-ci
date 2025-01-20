@@ -1,0 +1,41 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno-admission:kubearchive
+  labels:
+    app.kubernetes.io/component: admission-controller
+    app.kubernetes.io/instance: kyverno
+    app.kubernetes.io/part-of: kyverno
+rules:
+- apiGroups:
+  - kubearchive.kubearchive.org
+  resources:
+  - kubearchiveconfigs
+  verbs:
+  - create
+  - update
+  - delete
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno-background:kubearchive
+  labels:
+    app.kubernetes.io/component: background-controller
+    app.kubernetes.io/instance: kyverno
+    app.kubernetes.io/part-of: kyverno
+rules:
+- apiGroups:
+  - kubearchive.kubearchive.org
+  resources:
+  - kubearchiveconfigs
+  verbs:
+  - create
+  - update
+  - delete
+  - get
+  - list
+  - watch

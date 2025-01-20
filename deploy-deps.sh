@@ -42,6 +42,8 @@ deploy() {
     deploy_cert_manager
     deploy_trust_manager
     kubectl apply -k "${script_path}/dependencies/cluster-issuer"
+    kubectl create -k "${script_path}/dependencies/kyverno"
+    kubectl create -k "${script_path}/dependencies/kubearchive"
     deploy_tekton
     deploy_dex
     deploy_registry

@@ -1,0 +1,6 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- kubearchive_tenant_policy.yaml
+- default_tenant_kubearchiveconfig.yaml
+- rbac.yaml

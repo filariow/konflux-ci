@@ -1,0 +1,27 @@
+apiVersion: kubearchive.kubearchive.org/v1alpha1
+kind: KubeArchiveConfig
+metadata:
+  name: default-tenant-config
+  namespace: kubearchive
+spec:
+  resources:
+    - selector:
+        apiVersion: tekton.dev/v1
+        kind: PipelineRun
+      archiveOnDelete: "true"
+    - selector:
+        apiVersion: tekton.dev/v1
+        kind: TaskRun
+      archiveOnDelete: "true"
+    - selector:
+        apiVersion: v1
+        kind: Pod
+      archiveOnDelete: "true"
+    - selector:
+        apiVersion: appstudio.redhat.com/v1alpha1
+        kind: Snapshot
+      archiveOnDelete: "true"
+    - selector:
+        apiVersion: appstudio.redhat.com/v1alpha1
+        kind: Release
+      archiveOnDelete: "true"
