@@ -6,6 +6,7 @@ resources:
 - rbac.yaml
 - service.yaml
 - network_policy.yaml
+- tenant_rbac.yaml
 namespace: namespace-lister
 images:
 - name: namespace-lister
