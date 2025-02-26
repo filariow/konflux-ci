@@ -17,6 +17,12 @@
     }
   ],
   "enabledManagers": ["regex", "kustomize"],
+  "kustomize": {
+    "fileMatch": [
+      "^/konflux-ci/*/kustomization\\.ya?ml$"
+    ],
+    "pinDigests": false
+  },
   "customManagers": [
     {
       "customType": "regex",
