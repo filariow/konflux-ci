@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: build
+spec:
+  containers:
+  - image: bash
+    name: pod-1
+    imagePullPolicy: Always
+  - image: bash
+    name: pod-2

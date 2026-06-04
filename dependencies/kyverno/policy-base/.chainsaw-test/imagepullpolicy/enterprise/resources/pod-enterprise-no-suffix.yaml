@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: enterprise
+  labels:
+    tekton.dev/task: verify-enterprise-contract
+spec:
+  containers:
+  - image: bash
+    name: enterprise-1
+    imagePullPolicy: Always
+  - image: bash
+    name: enterprise-2

@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: build-pod
+  labels:
+    pipelines.appstudio.openshift.io/type: build
+spec:
+  containers:
+  - image: bash
+    name: build-pod
+    resources: {}

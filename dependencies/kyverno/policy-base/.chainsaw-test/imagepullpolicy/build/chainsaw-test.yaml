@@ -1,0 +1,60 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: imagepullpolicy-set-on-pod-build
+spec:
+  description: |
+    pod with suffix and build label is mutated
+  concurrent: false
+  namespace: 'matching-pod-imagepullpolicy-build'
+  steps:
+  - name: given-kyverno-has-permission-on-resources
+    try:
+    - apply:
+        file: ../../../../kyverno-rbac.yaml
+  - name: given-cluster-policy-is-ready
+    try:
+    - apply:
+        file: ../../../reduce-tekton-pr-taskrun-resource-requests.yaml
+    - assert:
+        file: ../../chainsaw-assert-clusterpolicy.yaml
+  - name: when-pod-is-created
+    try:
+    - apply:
+        file: ./resources/pod-build-to-mutate.yaml
+  - name: then-pod-is-mutated
+    try:
+    - assert:
+        file: ./resources/pod-build-mutated.yaml
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: imagepullpolicy-not-set-on-pod-build-with-no-suffix
+spec:
+  description: |
+    pod with build label but no suffix is not mutated
+  concurrent: false
+  namespace: 'not-matching-pod-imagepullpolicy-build-no-suffix'
+  steps:
+  - name: given-kyverno-has-permission-on-resources
+    try:
+    - apply:
+        file: ../../../../kyverno-rbac.yaml
+  - name: given-cluster-policy-is-ready
+    try:
+    - apply:
+        file: ../../../reduce-tekton-pr-taskrun-resource-requests.yaml
+    - assert:
+        file: ../../chainsaw-assert-clusterpolicy.yaml
+  - name: when-pod-is-created
+    try:
+    - apply:
+        file: ./resources/pod-build-no-suffix.yaml
+  - name: then-pod-is-not-mutated
+    try:
+    - assert:
+        file: ./resources/pod-build-no-suffix.yaml
