@@ -1,0 +1,62 @@
+name: Run Kubernetes Policies tests
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/kubernetes-policies-tests.yaml'
+      - 'components/policies/**'
+
+jobs:
+  find-chainsaw-tests:
+    name: Find chainsaw tests
+    runs-on: ubuntu-latest
+    outputs:
+      directories: ${{ steps.list-tests.outputs.directories }}
+    steps:
+      - name: Checkout Git Repository
+        uses: actions/checkout@v6
+
+      - id: list-tests
+        run: |
+          DIRS=$(find ./dependencies/policies -name .chainsaw-test -type d | jq -R -s -c 'split("\n")[:-1]')
+          echo "directories=${DIRS}" >> $GITHUB_OUTPUT
+
+  chainsaw-test:
+    name: Run Chainsaw tests
+    runs-on: ubuntu-latest
+    needs: ["find-chainsaw-tests"]
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJSON(needs.find-chainsaw-tests.outputs.directories) }}
+
+    steps:
+    - name: Install kind
+      env:
+          KIND_VERSION: v0.32.0
+      run: |
+        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64
+        chmod +x ./kind
+        sudo mv ./kind /usr/local/bin/kind
+
+    - uses: actions/checkout@v6
+
+    - name: Create Kind Cluster
+      run: ./hack/chainsaw-prepare.sh
+
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da  # v3.7.0
+
+    - name: Install Chainsaw
+      uses: kyverno/action-install-chainsaw@f2b47b97dc889c12702113753d713f01ec268de5  # v0.2.12
+      with:
+        verify: true
+
+    - name: Run chainsaw
+      shell: bash
+      run: |
+        chainsaw test \
+          --config .chainsaw.yaml \
+          --no-color=false \
+          "${{ matrix.directory }}"
