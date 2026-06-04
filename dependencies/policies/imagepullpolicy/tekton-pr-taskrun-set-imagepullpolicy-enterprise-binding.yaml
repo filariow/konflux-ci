@@ -1,0 +1,11 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: tekton-pr-taskrun-set-imagepullpolicy-enterprise.konflux-ci.dev
+spec:
+  matchResources:
+    objectSelector:
+      matchLabels:
+        tekton.dev/task: verify-enterprise-contract
+  policyName: tekton-pr-taskrun-set-imagepullpolicy.konflux-ci.dev

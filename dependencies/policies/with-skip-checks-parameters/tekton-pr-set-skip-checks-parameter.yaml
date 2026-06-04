@@ -1,0 +1,40 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: tekton-pr-set-skip-checks-parameter.konflux-ci.dev
+spec:
+  reinvocationPolicy: Never
+  matchConstraints:
+    resourceRules:
+    - apiGroups: ["tekton.dev"]
+      apiVersions: ["v1"]
+      operations: ["CREATE"]
+      resources: ["pipelineruns"]
+      scope: "Namespaced"
+  matchConditions:
+  - name: has-original-prname-label
+    expression: >-
+      has(object.metadata.labels) &&
+      "pipelinesascode.tekton.dev/original-prname" in object.metadata.labels &&
+      object.metadata.labels["pipelinesascode.tekton.dev/original-prname"].
+        matches("^konflux-ci-upstream-.+-on-push$")
+  - name: has-skip-checks-param
+    expression: >-
+      object.spec.pipelineSpec.params.exists(p, p.name == "skip-checks")
+  mutations:
+  - patchType: ApplyConfiguration
+    applyConfiguration:
+      expression: >-
+        Object{
+          spec: Object.spec{
+            pipelineSpec: Object.spec.pipelineSpec{
+              params: object.spec.pipelineSpec.params.map(p,
+                Object.spec.pipelineSpec.params{
+                  name: p.name,
+                  default: (p.name == "skip-checks") ? "true" : p.default, 
+                }
+              )
+            }
+          }
+        }

@@ -1,0 +1,7 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: tekton-pr-set-skip-checks-parameter.konflux-ci.dev
+spec:
+  policyName: tekton-pr-set-skip-checks-parameter.konflux-ci.dev

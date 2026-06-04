@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: enterprise-pod
+  labels:
+    tekton.dev/task: verify-enterprise-contract
+spec:
+  containers:
+  - image: bash
+    name: enterprise-pod
+    resources:
+      requests:
+        memory: "100Mi"

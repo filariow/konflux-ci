@@ -257,7 +257,11 @@ fi
 # Create the Kind cluster
 KIND_CLUSTER="${KIND_CLUSTER:-konflux}"
 echo "Creating Kind cluster '${KIND_CLUSTER}'..."
-kind create cluster --name "${KIND_CLUSTER}" --config "${KIND_CONFIG}"
+KIND_CREATE_ARGS=""
+if [[ -n "${KUBERNETES_VERSION}" ]]; then
+  KIND_CREATE_ARGS+="--image kindest/node:v${KUBERNETES_VERSION}"
+fi
+kind create cluster --name "${KIND_CLUSTER}" --config "${KIND_CONFIG}" ${KIND_CREATE_ARGS}
 
 # Revert kind config changes
 echo "Reverting kind config to original state..."

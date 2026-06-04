@@ -1,0 +1,112 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: imagepullpolicy-set-on-pod-enterprise
+spec:
+  description: |
+    pod with suffix and enterprise label is mutated
+  concurrent: false
+  namespace: 'matching-pod-imagepullpolicy-enterprise'
+  steps:
+  - name: given-mutatingadmissionpolicy-is-installed
+    try:
+    - apply:
+        file: ../../../tekton-pr-taskrun-set-imagepullpolicy.yaml
+    - apply:
+        file: ../../../tekton-pr-taskrun-set-imagepullpolicy-enterprise-binding.yaml
+    - sleep:
+        duration: 1s
+  - name: when-pod-is-created
+    try:
+    - apply:
+        file: ./resources/pod-enterprise-to-mutate.yaml
+  - name: then-pod-is-mutated
+    try:
+    - assert:
+        file: ./resources/pod-enterprise-mutated.yaml
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: imagepullpolicy-not-set-on-pod-enterprise-with-no-suffix
+spec:
+  description: |
+    pod with enterprise label but no suffix is not mutated
+  concurrent: false
+  namespace: 'not-matching-pod-imagepullpolicy-enterprise-no-suffix'
+  steps:
+  - name: given-mutatingadmissionpolicy-is-installed
+    try:
+    - apply:
+        file: ../../../tekton-pr-taskrun-set-imagepullpolicy.yaml
+    - apply:
+        file: ../../../tekton-pr-taskrun-set-imagepullpolicy-enterprise-binding.yaml
+    - sleep:
+        duration: 1s
+  - name: when-pod-is-created
+    try:
+    - apply:
+        file: ./resources/pod-enterprise-no-suffix.yaml
+  - name: then-pod-is-not-mutated
+    try:
+    - assert:
+        file: ./resources/pod-enterprise-no-suffix.yaml
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: pod-without-suffix
+spec:
+  description: |
+    pod without suffix
+  concurrent: false
+  namespace: 'non-matching-pod-imagepullpolicy-enterprise'
+  steps:
+  - name: given-mutatingadmissionpolicy-is-installed
+    try:
+    - apply:
+        file: ../../../tekton-pr-taskrun-set-imagepullpolicy.yaml
+    - apply:
+        file: ../../../tekton-pr-taskrun-set-imagepullpolicy-enterprise-binding.yaml
+    - sleep:
+        duration: 1s
+  - name: when-pod-is-created
+    try:
+    - apply:
+        file: ./resources/pod-no-suffix-label.yaml
+  - name: then-pod-is-not-mutated
+    try:
+    - assert:
+        file: ./resources/pod-no-suffix-label.yaml
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: pod-with-suffix-no-labels
+spec:
+  description: |
+    pod with suffix, but no labels
+  concurrent: false
+  namespace: 'non-matching-pod-imagepullpolicy-enterprise'
+  steps:
+  - name: given-mutatingadmissionpolicy-is-installed
+    try:
+    - apply:
+        file: ../../../tekton-pr-taskrun-set-imagepullpolicy.yaml
+    - apply:
+        file: ../../../tekton-pr-taskrun-set-imagepullpolicy-enterprise-binding.yaml
+    - sleep:
+        duration: 1s
+  - name: when-pod-is-created
+    try:
+    - apply:
+        file: ./resources/pod-suffix-no-labels.yaml
+  - name: then-pod-is-not-mutated
+    try:
+    - assert:
+        file: ./resources/pod-suffix-no-labels.yaml

@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: build-pod
+  labels:
+    pipelines.appstudio.openshift.io/type: build
+spec:
+  containers:
+  - image: bash
+    name: build-pod-1
+    imagePullPolicy: IfNotPresent
+  - image: bash
+    name: build-pod-2
+    imagePullPolicy: IfNotPresent

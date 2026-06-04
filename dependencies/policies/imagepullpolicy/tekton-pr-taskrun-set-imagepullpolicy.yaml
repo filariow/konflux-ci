@@ -1,0 +1,33 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: tekton-pr-taskrun-set-imagepullpolicy.konflux-ci.dev
+spec:
+  reinvocationPolicy: "Never"
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      operations: ["CREATE"]
+      resources: ["pods"]
+      scope: "Namespaced"
+  matchConditions:
+  - name: "has-pod-suffix"
+    expression: |
+      object.metadata.name.endsWith("-pod")
+  mutations:
+  - patchType: "ApplyConfiguration"
+    applyConfiguration:
+      # We construct a matching Object structure. Server-side apply handles the deep merging.
+      expression: >
+        Object{
+          spec: Object.spec{
+            containers: object.spec.containers.map(c, 
+              Object.spec.containers{
+                name: c.name,
+                imagePullPolicy: 'IfNotPresent',
+              }
+            )
+          }
+        }

@@ -1,0 +1,47 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: tekton-pr-taskrun-reduce-resource.konflux-ci.dev
+spec:
+  reinvocationPolicy: "Never"
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      operations: ["CREATE"]
+      resources: ["pods"]
+      scope: "Namespaced"
+  matchConditions:
+  - name: "has-pod-suffix"
+    expression: |
+      object.metadata.name.endsWith("-pod")
+  - name: "has-requests-cpu-or-memory"
+    expression: >-
+      object.spec.containers.exists(item,
+        has(item.resources) &&
+        has(item.resources.requests) &&
+        (
+          ( has(item.resources.requests.cpu) && item.resources.requests.cpu != "" ) ||
+          ( has(item.resources.requests.memory) && item.resources.requests.memory != "" )
+        )
+      )
+  mutations:
+  - patchType: ApplyConfiguration
+    applyConfiguration:
+      expression: >
+        Object{
+          spec: Object.spec{
+            containers: object.spec.containers.map(c,
+              Object.spec.containers{
+                name: c.name,
+                resources: Object.spec.containers.resources{
+                  requests: Object.spec.containers.resources.requests{
+                    memory: "1Mi",
+                    cpu: "1m",
+                  }
+                }
+              }
+            )
+          }
+        }

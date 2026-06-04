@@ -127,10 +127,15 @@ deploy() {
     deploy_smee
     COMPLETED_STEPS+=("$CURRENT_STEP")
 
-    CURRENT_STEP="Kyverno"
-    echo "🛡️  Deploying Kyverno..." >&2
-    deploy_kyverno
-    COMPLETED_STEPS+=("$CURRENT_STEP")
+    CURRENT_STEP="Policies"
+    if [ "${USE_K8S_POLICIES}" == "true" ]; then
+      deploy_k8s_policies
+      COMPLETED_STEPS+=("$CURRENT_STEP")
+    else
+      echo "🛡️  Deploying Kyverno..." >&2
+      deploy_kyverno
+      COMPLETED_STEPS+=("$CURRENT_STEP")
+    fi
 
     CURRENT_STEP="Konflux Info"
     echo "📋 Deploying Konflux Info..." >&2
@@ -438,6 +443,21 @@ deploy_smee() {
         kubectl set env deployment/gosmee-client -n smee-client -c health-check-sidecar \
             DOWNSTREAM_SERVICE_URL="http://pipelines-as-code-controller.openshift-pipelines.svc.cluster.local:8080"
     fi
+}
+
+deploy_k8s_policies() {
+    # Default SET_SKIP_CHECKS=false: reduce-tekton only (pipeline security checks are not defaulted off).
+    # SET_SKIP_CHECKS=true applies set-skip-checks-parameter (e.g. GitHub Actions operator e2e; flaky scans).
+    : "${SET_SKIP_CHECKS:=false}"
+    local policy_dir="${script_path}/dependencies/policies"
+    if [[ "${SET_SKIP_CHECKS}" == "true" ]]; then
+        policy_dir="${script_path}/dependencies/policies/policy-with-skip-checks-mutation"
+    fi
+    echo "  🛡️  Applying Kubernetes policies from ${policy_dir}" >&2
+    local apply_cmd
+    apply_cmd=$(printf 'kubectl apply -k %q' "${policy_dir}")
+    retry "${apply_cmd}" \
+          "Failed to apply Kubernetes AdmissionPolicies"
 }
 
 deploy_kyverno() {

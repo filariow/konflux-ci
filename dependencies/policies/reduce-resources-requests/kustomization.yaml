@@ -1,0 +1,6 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- tekton-pr-taskrun-reduce-resources-build-binding.yaml
+- tekton-pr-taskrun-reduce-resources-enterprise-binding.yaml
+- tekton-pr-taskrun-reduce-resources.yaml
