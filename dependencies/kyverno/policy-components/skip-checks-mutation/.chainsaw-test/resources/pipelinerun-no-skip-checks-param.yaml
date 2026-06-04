@@ -1,0 +1,18 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: no-skip-checks-param-pr
+  labels:
+    pipelinesascode.tekton.dev/original-prname: konflux-ci-upstream-sample-on-push
+spec:
+  pipelineSpec:
+    params:
+    - name: other-param
+      default: "false"
+    tasks:
+    - name: noop
+      taskSpec:
+        steps:
+        - name: noop
+          image: bash

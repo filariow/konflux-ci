@@ -1,0 +1,102 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: skip-checks-default-set-on-matching-pipelinerun
+spec:
+  description: |
+    PipelineRun with matching original-prname label and skip-checks param gets default true
+  concurrent: false
+  namespace: matching-pipelinerun
+  steps:
+  - name: given-pipelinerun-crd
+    try:
+    - apply:
+        file: resources/pipelinerun-crd.yaml
+  - name: given-kyverno-has-permission-on-resources
+    try:
+    - apply:
+        file: ../../../kyverno-rbac.yaml
+  - name: given-cluster-policy-is-ready
+    try:
+    - apply:
+        file: ../set-skip-checks-parameter.yaml
+    - assert:
+        file: chainsaw-assert-clusterpolicy.yaml
+  - name: when-pipelinerun-is-created
+    try:
+    - apply:
+        file: resources/pipelinerun-to-mutate.yaml
+  - name: then-pipelinerun-is-mutated
+    try:
+    - assert:
+        file: resources/pipelinerun-mutated.yaml
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: skip-checks-not-set-on-pipelinerun-with-wrong-label
+spec:
+  description: |
+    PipelineRun without matching original-prname label is not mutated
+  concurrent: false
+  namespace: not-matching-pipelinerun-label
+  steps:
+  - name: given-pipelinerun-crd
+    try:
+    - apply:
+        file: resources/pipelinerun-crd.yaml
+  - name: given-kyverno-has-permission-on-resources
+    try:
+    - apply:
+        file: ../../../kyverno-rbac.yaml
+  - name: given-cluster-policy-is-ready
+    try:
+    - apply:
+        file: ../set-skip-checks-parameter.yaml
+    - assert:
+        file: chainsaw-assert-clusterpolicy.yaml
+  - name: when-pipelinerun-is-created
+    try:
+    - apply:
+        file: resources/pipelinerun-wrong-label.yaml
+  - name: then-pipelinerun-is-not-mutated
+    try:
+    - assert:
+        file: resources/pipelinerun-wrong-label.yaml
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: skip-checks-not-set-on-pipelinerun-without-skip-checks-param
+spec:
+  description: |
+    PipelineRun with matching label but no skip-checks param is not mutated
+  concurrent: false
+  namespace: not-matching-pipelinerun-param
+  steps:
+  - name: given-pipelinerun-crd
+    try:
+    - apply:
+        file: resources/pipelinerun-crd.yaml
+  - name: given-kyverno-has-permission-on-resources
+    try:
+    - apply:
+        file: ../../../kyverno-rbac.yaml
+  - name: given-cluster-policy-is-ready
+    try:
+    - apply:
+        file: ../set-skip-checks-parameter.yaml
+    - assert:
+        file: chainsaw-assert-clusterpolicy.yaml
+  - name: when-pipelinerun-is-created
+    try:
+    - apply:
+        file: resources/pipelinerun-no-skip-checks-param.yaml
+  - name: then-pipelinerun-is-not-mutated
+    try:
+    - assert:
+        file: resources/pipelinerun-no-skip-checks-param.yaml
